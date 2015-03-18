@@ -2,8 +2,6 @@
 
 var MODULE_NAME = 'plugin-socketio';
 
-var path = require('path');
-var mkdirp = require('mkdirp');
 var _ = require('underscore');
 var socketio = require('socket.io');
 
