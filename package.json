@@ -1,6 +1,6 @@
 {
   "name": "nodeplayer-plugin-socketio",
-  "version": "0.1.96",
+  "version": "0.1.97",
   "description": "Serves nodeplayer API hooks via socket.io",
   "main": "index.js",
   "scripts": {

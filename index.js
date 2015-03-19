@@ -39,8 +39,8 @@ exports.init = function(_player, _logger, callback) {
     player = _player;
     logger = _logger;
 
-    if (!player.httpServer) {
-        callback('module must be initialized after expressjs module!');
+    if (!player.plugins['express']) {
+        callback('module must be initialized after express module!');
     } else {
         player.socketio = socketio(player.httpServer);
         player.socketio.on('connection', function(socket) {
