@@ -39,7 +39,7 @@ exports.init = function(_player, _logger, callback) {
     player = _player;
     logger = _logger;
 
-    if (!player.plugins['express']) {
+    if (!player.plugins.express) {
         callback('module must be initialized after express module!');
     } else {
         player.socketio = socketio(player.httpServer);
