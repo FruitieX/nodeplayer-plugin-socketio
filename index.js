@@ -5,7 +5,7 @@ var MODULE_NAME = 'plugin-socketio';
 var _ = require('underscore');
 var socketio = require('socket.io');
 
-var nodeplayerConfig = require('nodeplayer-config');
+var nodeplayerConfig = require('nodeplayer').config;
 var coreConfig = nodeplayerConfig.getConfig();
 var defaultConfig = require('./default-config.js');
 var config = nodeplayerConfig.getConfig(MODULE_NAME, defaultConfig);
