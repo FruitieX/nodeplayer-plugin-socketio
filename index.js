@@ -52,6 +52,10 @@ exports.init = function(_player, _logger, callback) {
                 var err = player.removeFromQueue(data.pos, data.cnt);
                 socket.emit('removeFromQueueResult', err);
             });
+            socket.on('moveInQueue', function(data) {
+                var err = player.moveInQueue(data.from, data.to, data.cnt);
+                socket.emit('moveInQueueResult', err);
+            });
             socket.on('searchBackends', function(query) {
                 player.searchBackends(query, function(results) {
                     socket.emit('searchBackendsResult', results);
