@@ -43,30 +43,77 @@ exports.init = function(_player, _logger, callback) {
         callback('module must be initialized after express module!');
     } else {
         player.socketio = socketio(player.httpServer);
+
+        var isAuthorized = function(socket, event, callback) {
+            if (!player.socketio.protectedPaths) {
+                logger.silly('no protectedPaths for socketio');
+                callback();
+            } else if (player.socketio.protectedPaths.indexOf(event) === -1) {
+                logger.silly('no protectedPath for socketio event ' + event);
+                callback();
+            } else {
+                //jscs:disable requireCamelCaseOrUpperCaseIdentifiers
+                if (socket.request.user.logged_in) {
+                    //jscs:enable requireCamelCaseOrUpperCaseIdentifiers
+                    logger.silly('accepting event ' + event + ' from logged in user');
+                    callback();
+                } else {
+                    logger.silly('denying event ' + event + ' from anonymous user');
+                    socket.emit('invalidCredentials');
+                }
+            }
+        };
+
         player.socketio.on('connection', function(socket) {
             socket.on('addToQueue', function(data) {
-                var err = player.addToQueue(data.songs, data.pos);
-                socket.emit('addToQueueResult', err);
-            });
-            socket.on('removeFromQueue', function(data) {
-                var err = player.removeFromQueue(data.pos, data.cnt);
-                socket.emit('removeFromQueueResult', err);
-            });
-            socket.on('moveInQueue', function(data) {
-                var err = player.moveInQueue(data.from, data.to, data.cnt);
-                socket.emit('moveInQueueResult', err);
-            });
-            socket.on('searchBackends', function(query) {
-                player.searchBackends(query, function(results) {
-                    socket.emit('searchBackendsResult', results);
+                isAuthorized(socket, 'addToQueue', function() {
+                    var err = player.addToQueue(data.songs, data.pos);
+                    socket.emit('addToQueueResult', err);
                 });
             });
-            socket.on('startPlayback', player.startPlayback);
-            socket.on('pausePlayback', player.pausePlayback);
-            socket.on('skipSongs', player.skipSongs);
-            socket.on('shuffleQueue', player.shuffleQueue);
+            socket.on('removeFromQueue', function(data) {
+                isAuthorized(socket, 'removeFromQueue', function() {
+                    var err = player.removeFromQueue(data.pos, data.cnt);
+                    socket.emit('removeFromQueueResult', err);
+                });
+            });
+            socket.on('moveInQueue', function(data) {
+                isAuthorized(socket, 'moveInQueue', function() {
+                    var err = player.moveInQueue(data.from, data.to, data.cnt);
+                    socket.emit('moveInQueueResult', err);
+                });
+            });
+            socket.on('searchBackends', function(query) {
+                isAuthorized(socket, 'searchBackends', function() {
+                    player.searchBackends(query, function(results) {
+                        socket.emit('searchBackendsResult', results);
+                    });
+                });
+            });
+            socket.on('startPlayback', function(data) {
+                isAuthorized(socket, 'startPlayback', function() {
+                    player.startPlayback(data);
+                });
+            });
+            socket.on('pausePlayback', function(data) {
+                isAuthorized(socket, 'pausePlayback', function() {
+                    player.pausePlayback(data);
+                });
+            });
+            socket.on('skipSongs', function(data) {
+                isAuthorized(socket, 'skipSongs', function() {
+                    player.skipSongs(data);
+                });
+            });
+            socket.on('shuffleQueue', function(data) {
+                isAuthorized(socket, 'shuffleQueue', function() {
+                    player.shuffleQueue(data);
+                });
+            });
             socket.on('setVolume', function(data) {
-                player.setVolume(data.volume, data.userID);
+                isAuthorized(socket, 'setVolume', function() {
+                    player.setVolume(data.volume, data.userID);
+                });
             });
 
             playbackEvent(socket);
