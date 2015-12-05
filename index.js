@@ -35,20 +35,17 @@ var queueEvent = function(socket) {
 
 // called when nodeplayer is started to initialize the plugin
 // do any necessary initialization here
-exports.init = function(_player, _logger, callback) {
-    player = _player;
-    logger = _logger;
-
-    if (!player.plugins.express) {
+exports.init = function(vars, callback) {
+    if (!vars.app) {
         callback('module must be initialized after express module!');
     } else {
-        player.socketio = socketio(player.httpServer);
+        vars.socketio = socketio(vars.httpServer);
 
         var isAuthorized = function(socket, event, callback) {
-            if (!player.socketio.protectedPaths) {
+            if (!vars.socketio.protectedPaths) {
                 logger.silly('no protectedPaths for socketio');
                 callback();
-            } else if (player.socketio.protectedPaths.indexOf(event) === -1) {
+            } else if (vars.socketio.protectedPaths.indexOf(event) === -1) {
                 logger.silly('no protectedPath for socketio event ' + event);
                 callback();
             } else {
@@ -64,7 +61,7 @@ exports.init = function(_player, _logger, callback) {
             }
         };
 
-        player.socketio.on('connection', function(socket) {
+        vars.socketio.on('connection', function(socket) {
             socket.on('addToQueue', function(data) {
                 isAuthorized(socket, 'addToQueue', function() {
                     var err = player.addToQueue(data.songs, data.pos);
@@ -125,25 +122,25 @@ exports.init = function(_player, _logger, callback) {
 };
 
 exports.onSongChange = function(song) {
-    playbackEvent(player.socketio);
+    playbackEvent(vars.socketio);
 };
 exports.onSongSeek = exports.onSongChange;
 
 exports.onSongPause = function(song) {
-    playbackEvent(player.socketio);
+    playbackEvent(vars.socketio);
 };
 
 exports.postQueueModify = function(queue) {
-    queueEvent(player.socketio);
+    queueEvent(vars.socketio);
 };
 
 exports.onEndOfQueue = function() {
-    playbackEvent(player.socketio);
-    queueEvent(player.socketio);
+    playbackEvent(vars.socketio);
+    queueEvent(vars.socketio);
 };
 
 exports.onVolumeChange = function(volume, userID) {
-    player.socketio.emit('volume', {
+    vars.socketio.emit('volume', {
         volume: volume,
         userID: userID
     });
